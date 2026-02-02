@@ -400,29 +400,14 @@ function getPlayerList() {
     return players;
 }
 
-// Step 2: Extract unit icons from the table header
+// Step 2: Get hardcoded unit icons
 function extractUnitIcons($data) {
-    const icons = {};
-    const $table = $data.find('table.vis.w100');
-    const $headerRow = $table.find('tr').first();
-    const $headerCells = $headerRow.find('th');
-    
-    // Based on user requirements:
-    // th#3 = spear, th#4 = sword, th#6 = archer, th#10 = heavy
-    const unitMapping = [
-        { index: 3, unit: 'spear' },
-        { index: 4, unit: 'sword' },
-        { index: 6, unit: 'archer' },
-        { index: 10, unit: 'heavy' }
-    ];
-    
-    unitMapping.forEach(mapping => {
-        const $th = $headerCells.eq(mapping.index);
-        const $img = $th.find('img[src*="unit_"]');
-        if ($img.length > 0) {
-            icons[mapping.unit] = $img.attr('src');
-        }
-    });
+    const icons = {
+        spear: 'https://dsgr.innogamescdn.com/asset/1bc739f8/graphic/unit/unit_spear.webp',
+        sword: 'https://dsgr.innogamescdn.com/asset/1bc739f8/graphic/unit/unit_sword.webp',
+        archer: 'https://dsgr.innogamescdn.com/asset/1bc739f8/graphic/unit/unit_archer.webp',
+        heavy: 'https://dsgr.innogamescdn.com/asset/1bc739f8/graphic/unit/unit_heavy.webp'
+    };
     
     return icons;
 }
