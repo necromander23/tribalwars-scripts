@@ -408,12 +408,12 @@ function extractUnitIcons($data) {
     const $headerCells = $headerRow.find('th');
     
     // Based on user requirements:
-    // th#4 = spear, th#5 = sword, th#7 = archer, th#11 = heavy
+    // th#3 = spear, th#4 = sword, th#6 = archer, th#10 = heavy
     const unitMapping = [
-        { index: 4, unit: 'spear' },
-        { index: 5, unit: 'sword' },
-        { index: 7, unit: 'archer' },
-        { index: 11, unit: 'heavy' }
+        { index: 3, unit: 'spear' },
+        { index: 4, unit: 'sword' },
+        { index: 6, unit: 'archer' },
+        { index: 10, unit: 'heavy' }
     ];
     
     unitMapping.forEach(mapping => {
@@ -462,20 +462,20 @@ function parsePlayerDefense($data) {
         };
         
         // Get troops in home (even row)
-        // td#4 = spear, td#5 = sword, td#7 = archer, td#11 = heavy
+        // td#3 = spear, td#4 = sword, td#6 = archer, td#10 = heavy
         const $evenCells = $evenRow.find('td');
-        village.inHome.spear = parseInt($evenCells.eq(4).text().trim()) || 0;
-        village.inHome.sword = parseInt($evenCells.eq(5).text().trim()) || 0;
-        village.inHome.archer = CONFIG.hasArchers ? (parseInt($evenCells.eq(7).text().trim()) || 0) : 0;
-        village.inHome.heavy = parseInt($evenCells.eq(11).text().trim()) || 0;
+        village.inHome.spear = parseInt($evenCells.eq(3).text().trim()) || 0;
+        village.inHome.sword = parseInt($evenCells.eq(4).text().trim()) || 0;
+        village.inHome.archer = CONFIG.hasArchers ? (parseInt($evenCells.eq(6).text().trim()) || 0) : 0;
+        village.inHome.heavy = parseInt($evenCells.eq(10).text().trim()) || 0;
         
         // Get troops outside (odd row)
-        // td#2 = spear, td#3 = sword, td#5 = archer, td#9 = heavy
+        // td#1 = spear, td#2 = sword, td#4 = archer, td#8 = heavy
         const $oddCells = $oddRow.find('td');
-        village.outside.spear = parseInt($oddCells.eq(2).text().trim()) || 0;
-        village.outside.sword = parseInt($oddCells.eq(3).text().trim()) || 0;
-        village.outside.archer = CONFIG.hasArchers ? (parseInt($oddCells.eq(5).text().trim()) || 0) : 0;
-        village.outside.heavy = parseInt($oddCells.eq(9).text().trim()) || 0;
+        village.outside.spear = parseInt($oddCells.eq(1).text().trim()) || 0;
+        village.outside.sword = parseInt($oddCells.eq(2).text().trim()) || 0;
+        village.outside.archer = CONFIG.hasArchers ? (parseInt($oddCells.eq(4).text().trim()) || 0) : 0;
+        village.outside.heavy = parseInt($oddCells.eq(8).text().trim()) || 0;
         
         // Calculate totals
         DEFENSIVE_UNITS.forEach(unit => {
@@ -570,8 +570,10 @@ function displayResults() {
         html += `<span class="dtc-stat-label">`;
         if (iconSrc) {
             html += `<img src="${iconSrc}" class="dtc-unit-icon" />`;
+        } else {
+            html += `${UNIT_NAMES_GR[unit]}:`;
         }
-        html += `${UNIT_NAMES_GR[unit]}:</span>`;
+        html += `</span>`;
         html += `<span class="dtc-stat-value">${formatNumber(tribeTotals[unit])}</span>`;
         html += `</div>`;
     });
@@ -599,8 +601,10 @@ function displayResults() {
             html += `<span class="dtc-stat-label">`;
             if (iconSrc) {
                 html += `<img src="${iconSrc}" class="dtc-unit-icon" />`;
+            } else {
+                html += `${UNIT_NAMES_GR[unit]}:`;
             }
-            html += `${UNIT_NAMES_GR[unit]}:</span>`;
+            html += `</span>`;
             html += `<span class="dtc-stat-value">${formatNumber(stats.totalUnits[unit])}</span>`;
             html += `</div>`;
         });
@@ -627,7 +631,7 @@ function displayResults() {
                     if (iconSrc) {
                         html += `<img src="${iconSrc}" class="dtc-unit-icon" />`;
                     }
-                    html += `${UNIT_NAMES_GR[unit]}: <strong>${formatNumber(village.total[unit])}</strong>`;
+                    html += `<strong>${formatNumber(village.total[unit])}</strong>`;
                     html += ` (Home: ${formatNumber(village.inHome[unit])}, Outside: ${formatNumber(village.outside[unit])})`;
                     html += `</div>`;
                 });
