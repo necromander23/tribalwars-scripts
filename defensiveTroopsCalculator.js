@@ -448,8 +448,8 @@ function parsePlayerDefense($data) {
         const $villageLink = $villageCell.find('a');
         const villageName = $villageLink.text().trim();
         
-        // Only process villages with "$" in their name
-        if (!villageName.includes('$')) {
+        // Only process villages with "*" in their name
+        if (!villageName.includes('*')) {
             continue;
         }
         
@@ -521,7 +521,7 @@ function calculatePlayerStats(villages) {
 // Step 5: Display results
 function displayResults() {
     let html = '<div class="defensive-troop-counter">';
-    html += '<div class="dtc-header">Defensive Troops Calculator ($ Villages Only)<div class="dtc-author">Script by antonistsam</div></div>';
+    html += '<div class="dtc-header">Defensive Troops Calculator (* Villages Only)<div class="dtc-author">Script by antonistsam</div></div>';
     
     // Settings panel
     html += '<div class="dtc-settings">';
@@ -531,7 +531,7 @@ function displayResults() {
     
     // Info box
     html += '<div class="dtc-info-box">';
-    html += '📊 Only counting villages with "$" character in their names';
+    html += '📊 Only counting villages with "*" character in their names';
     html += '</div>';
     
     // Calculate tribe totals
@@ -558,7 +558,7 @@ function displayResults() {
     
     // Display tribe totals
     html += `<div class="dtc-tribe-totals">`;
-    html += `<div class="dtc-tribe-header">Tribe Totals (${tribeTotals.villageCount} $ villages)</div>`;
+    html += `<div class="dtc-tribe-header">Tribe Totals (${tribeTotals.villageCount} * villages)</div>`;
     html += `<div class="dtc-stats-grid">`;
     
     DEFENSIVE_UNITS.forEach(unit => {
@@ -587,7 +587,7 @@ function displayResults() {
         if (!stats) return;
         
         html += `<div class="dtc-player-section">`;
-        html += `<div class="dtc-player-name">${player.name}<span class="dtc-village-count">(${stats.villageCount} $ villages)</span></div>`;
+        html += `<div class="dtc-player-name">${player.name}<span class="dtc-village-count">(${stats.villageCount} * villages)</span></div>`;
         
         // Stats grid
         html += `<div class="dtc-stats-grid">`;
