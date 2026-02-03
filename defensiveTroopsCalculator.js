@@ -307,16 +307,46 @@ function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// Parse coordinates from village name
+// Parse coordinates and continent from village name
 function parseCoordinates(villageName) {
-    const match = villageName.match(/(\d+)\|(\d+)/);
+    const match = villageName.match(/(\d+)\|(\d+)\)\s*(K\d+)/);
     if (match) {
         return {
             x: parseInt(match[1]),
-            y: parseInt(match[2])
+            y: parseInt(match[2]),
+            continent: match[3]
         };
     }
     return null;
+}
+
+// Check if a point is outside (above/left of) the diagonal line
+// Line from (500, 430) to (597, 499)
+function isOutsideDiagonal(x, y) {
+    // For a line from (x1, y1) to (x2, y2), point (x, y) is on the left/above side if:
+    // (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1) < 0
+    const x1 = 500, y1 = 430;
+    const x2 = 597, y2 = 499;
+    const crossProduct = (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1);
+    return crossProduct < 0; // Above/left of the diagonal
+}
+
+// Check if village should be included based on coordinates
+function shouldIncludeVillage(coords) {
+    if (!coords) return false;
+    
+    const { x, y, continent } = coords;
+    
+    if (continent === 'K44') {
+        // For K44: only villages with y < 428
+        return y < 428;
+    } else if (continent === 'K45') {
+        // For K45: only villages outside (below/right of) the diagonal
+        return isOutsideDiagonal(x, y);
+    }
+    
+    // For other continents, don't include
+    return false;
 }
 
 // Sequential request handler with delay
@@ -432,15 +462,18 @@ function parsePlayerDefense($data) {
         const $villageCell = $evenRow.find('td').first();
         const $villageLink = $villageCell.find('a');
         const villageName = $villageLink.text().trim();
+        const villageHref = $villageLink.attr('href') || '';
         
-        // Only process villages with "*" in their name
-        if (!villageName.includes('*')) {
+        // Parse coordinates and check if village should be included
+        const coords = parseCoordinates(villageName);
+        if (!shouldIncludeVillage(coords)) {
             continue;
         }
         
         const village = {
             name: villageName,
-            coords: parseCoordinates(villageName),
+            href: villageHref,
+            coords: coords,
             inHome: {},
             outside: {},
             total: {}
@@ -506,7 +539,7 @@ function calculatePlayerStats(villages) {
 // Step 5: Display results
 function displayResults() {
     let html = '<div class="defensive-troop-counter">';
-    html += '<div class="dtc-header">Defensive Troops Calculator (* Villages Only)<div class="dtc-author">Script by antonistsam</div></div>';
+    html += '<div class="dtc-header">Defensive Troops Calculator (K44/K45 Depth Filter)<div class="dtc-author">Script by antonistsam</div></div>';
     
     // Settings panel
     html += '<div class="dtc-settings">';
@@ -516,7 +549,7 @@ function displayResults() {
     
     // Info box
     html += '<div class="dtc-info-box">';
-    html += '📊 Only counting villages with "*" character in their names';
+    html += '📊 Filtering rules: K44 (y<428) | K45 (above diagonal 500|430 → 597|499)';
     html += '</div>';
     
     // Calculate tribe totals
@@ -543,7 +576,7 @@ function displayResults() {
     
     // Display tribe totals
     html += `<div class="dtc-tribe-totals">`;
-    html += `<div class="dtc-tribe-header">Tribe Totals (${tribeTotals.villageCount} * villages)</div>`;
+    html += `<div class="dtc-tribe-header">Tribe Totals (${tribeTotals.villageCount} villages)</div>`;
     html += `<div class="dtc-stats-grid">`;
     
     DEFENSIVE_UNITS.forEach(unit => {
@@ -572,7 +605,7 @@ function displayResults() {
         if (!stats) return;
         
         html += `<div class="dtc-player-section">`;
-        html += `<div class="dtc-player-name">${player.name}<span class="dtc-village-count">(${stats.villageCount} * villages)</span></div>`;
+        html += `<div class="dtc-player-name">${player.name}<span class="dtc-village-count">(${stats.villageCount} villages)</span></div>`;
         
         // Stats grid
         html += `<div class="dtc-stats-grid">`;
@@ -604,7 +637,7 @@ function displayResults() {
             
             stats.villages.forEach(village => {
                 html += `<div class="dtc-village-item">`;
-                html += `<div class="dtc-village-name">${village.name}</div>`;
+                html += `<div class="dtc-village-name"><a href="${village.href}" style="color: #7289DA; text-decoration: none;">${village.name}</a></div>`;
                 html += `<div class="dtc-village-troops">`;
                 
                 DEFENSIVE_UNITS.forEach(unit => {
