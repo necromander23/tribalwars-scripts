@@ -481,6 +481,66 @@ const CSS_STYLES = `
     color: white;
     margin-left: 10px;
 }
+
+.ttc-export-section {
+    background-color: #2C2F33;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 2px solid #3BA55D;
+}
+
+.ttc-export-header {
+    background-color: #3BA55D;
+    color: white;
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ttc-export-content {
+    padding: 15px;
+}
+
+.ttc-export-textarea {
+    width: 100%;
+    min-height: 300px;
+    background-color: #36393F;
+    color: white;
+    border: 1px solid #202225;
+    border-radius: 3px;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.ttc-copy-btn {
+    background-color: white;
+    color: #3BA55D;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.ttc-copy-btn:hover {
+    background-color: #DCDDDE;
+}
+
+.ttc-export-info {
+    color: #99AAB5;
+    font-size: 13px;
+    margin-top: 10px;
+    font-style: italic;
+}
 </style>`;
 
 $("head").append(CSS_STYLES);
@@ -518,6 +578,43 @@ function getVillageTypeLabel(category) {
         'quarter': '1/4'
     };
     return labels[category] || '';
+}
+
+// Generate Excel-friendly text for offensive villages
+function generateOffensiveExportText() {
+    // Header row
+    let text = "Player\tFull\t3/4\t1/2\t1/4\tTotal\n";
+    
+    // Calculate totals
+    const totals = {
+        full: 0,
+        threeFourths: 0,
+        half: 0,
+        quarter: 0,
+        total: 0
+    };
+    
+    // Add each player's data
+    DATA.players.forEach(player => {
+        const stats = DATA.playerStats[player.name];
+        if (stats) {
+            const playerTotal = stats.nukes.full + stats.nukes.threeFourths + 
+                               stats.nukes.half + stats.nukes.quarter;
+            
+            text += `${player.name}\t${stats.nukes.full}\t${stats.nukes.threeFourths}\t${stats.nukes.half}\t${stats.nukes.quarter}\t${playerTotal}\n`;
+            
+            totals.full += stats.nukes.full;
+            totals.threeFourths += stats.nukes.threeFourths;
+            totals.half += stats.nukes.half;
+            totals.quarter += stats.nukes.quarter;
+            totals.total += playerTotal;
+        }
+    });
+    
+    // Add totals row
+    text += `\nTotal\t${totals.full}\t${totals.threeFourths}\t${totals.half}\t${totals.quarter}\t${totals.total}`;
+    
+    return text;
 }
 
 // Sequential request handler with delay
@@ -839,6 +936,18 @@ function displayResults() {
     html += `</div>`; // End stats grid
     html += `</div>`; // End tribe totals
     
+    // Excel Export Section
+    html += `<div class="ttc-export-section">`;
+    html += `<div class="ttc-export-header">`;
+    html += `<span>📊 Offensive Villages Export (Excel-Ready)</span>`;
+    html += `<button class="ttc-copy-btn" id="ttc-copy-export">Copy to Clipboard</button>`;
+    html += `</div>`;
+    html += `<div class="ttc-export-content">`;
+    html += `<textarea class="ttc-export-textarea" id="ttc-export-textarea" readonly></textarea>`;
+    html += `<div class="ttc-export-info">💡 Tab-separated format ready for Excel/Google Sheets. Click "Copy to Clipboard" or select all (Ctrl+A) and copy (Ctrl+C).</div>`;
+    html += `</div>`;
+    html += `</div>`;
+    
     DATA.players.forEach(player => {
         const stats = DATA.playerStats[player.name];
         if (!stats) return;
@@ -907,6 +1016,28 @@ function displayResults() {
     
     // Make collapsibles work
     makeCollapsible();
+    
+    // Populate export textarea
+    const exportText = generateOffensiveExportText();
+    $('#ttc-export-textarea').val(exportText);
+    
+    // Copy to clipboard handler
+    $('#ttc-copy-export').on('click', function() {
+        const $textarea = $('#ttc-export-textarea');
+        $textarea.select();
+        
+        try {
+            document.execCommand('copy');
+            const $btn = $(this);
+            const originalText = $btn.text();
+            $btn.text('✓ Copied!');
+            setTimeout(() => {
+                $btn.text(originalText);
+            }, 2000);
+        } catch (err) {
+            alert('Failed to copy. Please select the text manually and press Ctrl+C');
+        }
+    });
     
     // Add distance analysis section
     displayDistanceAnalysis();
