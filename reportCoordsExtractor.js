@@ -198,11 +198,15 @@
             const labelSpan = tr.querySelector('span.quickedit-label');
             if (labelSpan) {
                 const text = labelSpan.textContent;
-                // Find the coord before 'επιτίθεται'
-                // Pattern: (xxx|yyy) before 'επιτίθεται'
-                const match = text.match(/\((\d{3}\|\d{3})\)[^\(\)]*?επιτίθεται/);
-                if (match) {
-                    coords.push(match[1]);
+                // Find the coord before 'επιτίθεται' (allow whitespace, Greek, and any chars)
+                // Pattern: (xxx|yyy) before 'επιτίθεται', robust to extra spaces
+                // Example: Ο/Η nteluis (Jotunheim (525|586) K55) επιτίθεται στο ...
+                // We want the last (xxx|yyy) before 'επιτίθεται'
+                // Use a global regex to find all (xxx|yyy), then pick the last before 'επιτίθεται'
+                const beforeAttack = text.split('επιτίθεται')[0];
+                const coordMatches = [...beforeAttack.matchAll(/\((\d{3}\|\d{3})\)/g)];
+                if (coordMatches.length > 0) {
+                    coords.push(coordMatches[coordMatches.length - 1][1]);
                 }
             }
         }
